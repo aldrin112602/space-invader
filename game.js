@@ -25,7 +25,6 @@ class Player {
     ctx.translate(this.x + this.width / 2, this.y + this.height / 2);
     ctx.rotate((Math.PI / 180) * this.angle);
 
-    // Draw the player
     ctx.drawImage(
       image,
       -this.width / 2,
@@ -39,7 +38,6 @@ class Player {
 
   update() {}
 }
-
 
 class Obstacle {
   constructor(x, y, width, height, color) {
@@ -56,7 +54,7 @@ class Obstacle {
   }
 
   update() {
-    this.y -= 6;
+    this.y -= 10;
   }
 }
 
@@ -88,9 +86,8 @@ const player = new Player(
 let PLAYERLIVES = 5;
 const livesArr = [];
 
-
-let playerAmmo = 10;
-const maxAmmo = 10;
+let playerAmmo = 30;
+const maxAmmo = 30;
 
 (function () {
   const maxLives = 5;
@@ -107,23 +104,45 @@ const maxAmmo = 10;
   }
 })();
 
+let obstacles = [];
+
 function drawAmmoBar() {
   const barWidth = gameHeight > gameWidth ? 150 : 400;
   const barHeight = 20;
-  const x = gameWidth - barWidth - 10; 
+  const x = gameWidth - barWidth - 10;
   const y = 10;
   const color = "blue";
   const filledWidth = (playerAmmo / maxAmmo) * barWidth;
 
-
   ctx.fillStyle = "gray";
   ctx.fillRect(x, y, barWidth, barHeight);
-
 
   ctx.fillStyle = color;
   ctx.fillRect(x, y, filledWidth, barHeight);
 }
 
+setInterval(function () {
+  if (playerAmmo >= maxAmmo) return;
+  playerAmmo++;
+}, 1000);
+
+cvs.addEventListener("click", function () {
+  if (playerAmmo > 0) playerAmmo--;
+  else return;
+  obstacles.push(
+    new Obstacle(player.x + player.width / 2, player.y + 50, 3, 10, "orange")
+  );
+  let shotSound = new Audio("./assets/sounds/shot.wav");
+  shotSound.play()
+});
+document.addEventListener('DOMContentLoaded', function() {
+  const sound1 = new Audio('./assets/sounds/outer-sound-1.mp3')
+  sound1.autoplay = true;
+  sound1.loop = true;
+  const sound2 = new Audio("./assets/sounds/outer-sound-2.mp3");
+  sound2.loop = true;
+  sound2.autoplay = true;
+})
 
 document.addEventListener("keyup", function () {
   player.angle = 0;
@@ -207,11 +226,6 @@ function renderBg() {
   x++;
 }
 
-
-
-
-
-
 // small devices (cp)
 if (gameWidth < gameHeight) {
   alert(
@@ -252,9 +266,15 @@ function animate() {
   livesArr.forEach((life) => {
     life.draw();
   });
+
   drawAmmoBar();
   createFlame();
   player.draw();
+  obstacles.forEach((obs) => {
+    obs.draw();
+    obs.update();
+    
+  });
 
   window.requestAnimationFrame(animate);
 }
