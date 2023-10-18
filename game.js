@@ -124,7 +124,7 @@ function drawAmmoBar() {
 setInterval(function () {
   if (playerAmmo >= maxAmmo) return;
   playerAmmo++;
-}, 1000);
+}, 600);
 
 cvs.addEventListener("click", function () {
   if (playerAmmo > 0) playerAmmo--;
@@ -133,26 +133,36 @@ cvs.addEventListener("click", function () {
     new Obstacle(player.x + player.width / 2, player.y + 50, 3, 10, "orange")
   );
   let shotSound = new Audio("./assets/sounds/shot.wav");
-  shotSound.play()
+  shotSound.play();
 });
-document.addEventListener('DOMContentLoaded', function() {
-  const sound1 = new Audio('./assets/sounds/outer-sound-1.mp3')
-  sound1.autoplay = true;
-  sound1.loop = true;
-  const sound2 = new Audio("./assets/sounds/outer-sound-2.mp3");
-  sound2.loop = true;
-  sound2.autoplay = true;
-})
+const sound2 = new Audio("./assets/sounds/outer-sound-2.mp3");
+sound2.loop = true;
+const sound1 = new Audio("./assets/sounds/outer-sound-1.mp3");
+sound1.loop = true;
+
+document.addEventListener("DOMContentLoaded", function () {
+  // sound1.play();
+  // sound2.play();
+});
 
 document.addEventListener("keyup", function () {
   player.angle = 0;
 });
 document.addEventListener("keydown", function ({ key }) {
   (key = key.toLowerCase()),
-    (keys = ["arrowleft", "arrowright", "arrowup", "arrowdown"]);
+    (keys = [
+      "arrowleft",
+      "arrowright",
+      "arrowup",
+      "arrowdown",
+      "a",
+      "w",
+      "s",
+      "d",
+    ]);
   if (!keys.includes(key)) return;
 
-  if (key == keys[0]) {
+  if (key == keys[0] || key == "a") {
     if (player.x <= 0) {
       player.x = 0;
       return;
@@ -160,14 +170,14 @@ document.addEventListener("keydown", function ({ key }) {
     player.angle = -20;
 
     player.x -= 10;
-  } else if (key == keys[1]) {
+  } else if (key == keys[1] || key == "d") {
     if (player.x >= gameWidth - player.width) {
       player.x = gameWidth - player.width;
       return;
     }
     player.angle = 20;
     player.x += 10;
-  } else if (key == keys[2]) {
+  } else if (key == keys[2] || key == "w") {
     if (player.y <= 0) {
       player.y = 0;
       return;
@@ -273,7 +283,6 @@ function animate() {
   obstacles.forEach((obs) => {
     obs.draw();
     obs.update();
-    
   });
 
   window.requestAnimationFrame(animate);
