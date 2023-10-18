@@ -40,10 +40,8 @@ class Player {
   update() {}
 }
 
-
 const playerHeight = 100,
   playerWidth = 100;
-
 
 const player = new Player(
   gameWidth / 2 - playerWidth / 2,
@@ -92,25 +90,18 @@ document.addEventListener("keydown", function ({ key }) {
     player.y += 50;
   }
 });
-let bgY = 0, x = 0, bgY2 = -(gameHeight - 30);
+let bgY = 0,
+  x = 0,
+  bgY2 = -(gameHeight - 30);
 
 function createFlame() {
   const flameHeight = 100;
   const flameWidth = 20;
   ctx.fillStyle = "orange";
-  ctx.save(); // Save the canvas state
-
-  // Translate to the center of the player's spaceship
-  ctx.translate(player.x + player.width / 2, player.y + player.height);
-
-  // Apply the rotation based on the player's angle
+  ctx.save();
+  ctx.translate(player.x + player.width / 2, player.y + player.height / 2);
   ctx.rotate((Math.PI / 180) * player.angle);
 
-  // Move the flame slightly below the spaceship's center
-  const yOffset = 0; // Adjust this value as needed
-  ctx.translate(0, yOffset);
-
-  // Draw the flame
   ctx.beginPath();
   ctx.moveTo(-flameWidth / 2, 0);
   ctx.lineTo(0, flameHeight);
@@ -118,12 +109,10 @@ function createFlame() {
   ctx.closePath();
   ctx.fill();
 
-  ctx.restore(); // Restore the canvas state
+  ctx.restore();
 }
 
-
-function animate() {
-  ctx.clearRect(0, 0, gameWidth, gameHeight);
+function renderBg() {
   const bg1 = new Image();
   bg1.src = "./assets/bg.png";
   ctx.drawImage(bg1, 0, bgY, gameWidth, gameHeight);
@@ -132,24 +121,26 @@ function animate() {
   bg2.src = "./assets/bg.png";
   ctx.drawImage(bg2, 0, bgY2, gameWidth, gameHeight);
 
-
-  if(bgY >= gameHeight) {
+  if (bgY >= gameHeight) {
     bgY = -(gameHeight - 50);
   }
-  if(bgY2 >= gameHeight) {
+  if (bgY2 >= gameHeight) {
     bgY2 = -(gameHeight - 50);
   }
-  if(x % 2 == 0) {
+  if (x % 2 == 0) {
     bgY += 20;
     bgY2 += 20;
   }
-  
+
   x++;
+}
 
-
-
-  player.draw();
+function animate() {
+  ctx.clearRect(0, 0, gameWidth, gameHeight);
+  renderBg();
   createFlame();
+  player.draw();
+
   window.requestAnimationFrame(animate);
 }
 
