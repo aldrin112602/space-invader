@@ -40,6 +40,26 @@ class Player {
   update() {}
 }
 
+
+class Obstacle {
+  constructor(x, y, width, height, color) {
+    this.width = width;
+    this.height = height;
+    this.x = x;
+    this.y = y;
+    this.color = color;
+  }
+
+  draw() {
+    ctx.fillStyle = this.color;
+    ctx.fillRect(this.x, this.y, this.width, this.height);
+  }
+
+  update() {
+    this.y -= 6;
+  }
+}
+
 class LifeBar {
   constructor(x, y, width, height, color) {
     this.x = x;
@@ -67,6 +87,11 @@ const player = new Player(
 
 let PLAYERLIVES = 5;
 const livesArr = [];
+
+
+let playerAmmo = 10;
+const maxAmmo = 10;
+
 (function () {
   const maxLives = 5;
 
@@ -81,6 +106,24 @@ const livesArr = [];
     }
   }
 })();
+
+function drawAmmoBar() {
+  const barWidth = gameHeight > gameWidth ? 150 : 400;
+  const barHeight = 20;
+  const x = gameWidth - barWidth - 10; 
+  const y = 10;
+  const color = "blue";
+  const filledWidth = (playerAmmo / maxAmmo) * barWidth;
+
+
+  ctx.fillStyle = "gray";
+  ctx.fillRect(x, y, barWidth, barHeight);
+
+
+  ctx.fillStyle = color;
+  ctx.fillRect(x, y, filledWidth, barHeight);
+}
+
 
 document.addEventListener("keyup", function () {
   player.angle = 0;
@@ -97,26 +140,26 @@ document.addEventListener("keydown", function ({ key }) {
     }
     player.angle = -20;
 
-    player.x -= 50;
+    player.x -= 10;
   } else if (key == keys[1]) {
     if (player.x >= gameWidth - player.width) {
       player.x = gameWidth - player.width;
       return;
     }
     player.angle = 20;
-    player.x += 50;
+    player.x += 10;
   } else if (key == keys[2]) {
     if (player.y <= 0) {
       player.y = 0;
       return;
     }
-    player.y -= 50;
+    player.y -= 10;
   } else {
     if (player.y >= gameHeight - player.height) {
       player.y = gameHeight - player.height;
       return;
     }
-    player.y += 50;
+    player.y += 10;
   }
 });
 let bgY = 0,
@@ -151,18 +194,23 @@ function renderBg() {
   ctx.drawImage(bg2, 0, bgY2, gameWidth, gameHeight);
 
   if (bgY >= gameHeight) {
-    bgY = -(gameHeight - 50);
+    bgY = -(gameHeight - 60);
   }
   if (bgY2 >= gameHeight) {
-    bgY2 = -(gameHeight - 50);
+    bgY2 = -(gameHeight - 60);
   }
   if (x % 2 == 0) {
-    bgY += 20;
-    bgY2 += 20;
+    bgY += 10;
+    bgY2 += 10;
   }
 
   x++;
 }
+
+
+
+
+
 
 // small devices (cp)
 if (gameWidth < gameHeight) {
@@ -184,7 +232,7 @@ if (gameWidth < gameHeight) {
       }
       player.angle = -20;
 
-      player.x -= 50;
+      player.x -= 10;
     } else {
       //right
       if (player.x >= gameWidth - player.width) {
@@ -192,7 +240,7 @@ if (gameWidth < gameHeight) {
         return;
       }
       player.angle = 20;
-      player.x += 50;
+      player.x += 10;
     }
   });
 }
@@ -204,6 +252,7 @@ function animate() {
   livesArr.forEach((life) => {
     life.draw();
   });
+  drawAmmoBar();
   createFlame();
   player.draw();
 
