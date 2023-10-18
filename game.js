@@ -73,6 +73,54 @@ class LifeBar {
   }
   update() {}
 }
+
+class Asteroid {
+  constructor(x, y, width, height) {
+    this.x = x;
+    this.y = y;
+    this.width = width;
+    this.height = height;
+    this.frameWidth = 560 / 7;
+    this.frameHeight = 320 / 4;
+    this.currentFrame = 0;
+    this.frameCount = 7;
+    this.rowCount = 4;
+    this.readyToPop = false;
+    this.toExplode = false;
+    this.staggerFrames = 6;
+    this.gameFrame = 0;
+  }
+
+  draw() {
+    const image = new Image();
+    image.src = "./assets/asteroid.png";
+
+    ctx.drawImage(
+      image,
+      this.currentFrame * this.frameWidth,
+      0,
+      this.frameWidth,
+      this.frameHeight,
+      this.x,
+      this.y,
+      this.width,
+      this.height
+    );
+  }
+
+  update() {
+    this.y += 3;
+    if (this.toExplode && (this.gameFrame % this.staggerFrames) == 0) {
+      if (this.currentFrame < this.frameCount) {
+        this.currentFrame++;
+      }
+    }
+    
+    this.gameFrame++;
+    
+  }
+}
+ 
 const playerHeight = 100,
   playerWidth = 100;
 
@@ -83,13 +131,17 @@ const player = new Player(
   playerHeight
 );
 
+
+const asteroids = []
+
 let PLAYERLIVES = 5;
-const livesArr = [];
+
 
 let playerAmmo = 30;
 const maxAmmo = 30;
 
-(function () {
+function handlePlayerLives() {
+  const livesArr = [];
   const maxLives = 5;
 
   for (let i = 0; i < maxLives; i++) {
@@ -102,7 +154,11 @@ const maxAmmo = 30;
       livesArr.push(new LifeBar(5 + i * (w + 10), 10, w, h, "white"));
     }
   }
-})();
+  
+  livesArr.forEach((life) => {
+    life.draw();
+  });
+}
 
 let obstacles = [];
 
@@ -125,7 +181,43 @@ setInterval(function () {
   if (playerAmmo >= maxAmmo) return;
   playerAmmo++;
 }, 600);
+setInterval(function () {
+  const h = 60, w = 60
+  asteroids.push(new Asteroid(Math.floor(Math.random() * (gameWidth - w)), -50, w, h))
+}, 5000)
 
+function isColliding(rect1, rect2) {
+    return (
+        rect1.x < rect2.x + rect2.width &&
+        rect1.x + rect1.width > rect2.x &&
+        rect1.y < rect2.y + rect2.height &&
+        rect1.y + rect1.height > rect2.y
+    );
+}
+
+function handleAsteroid() {
+  asteroids.filter(e => !e.readyToPop)
+  .forEach(asteroid => {
+    if(isColliding(asteroid, player)) {
+      const explodeAudio = new Audio(`assets/sounds/explosion${Math.floor(Math.random()) + 1}.wav`)
+      asteroid.toExplode = true
+      if(window.navigator.vibrate) {
+        navigator.vibrate([200])
+      }
+      explodeAudio.play();
+      
+      setTimeout(() => {
+        asteroid.readyToPop = true
+        PLAYERLIVES--
+        return
+      }, 500)
+      
+      
+    }
+    asteroid.draw()
+    asteroid.update()
+  })
+}
 cvs.addEventListener("click", function () {
   if (playerAmmo > 0) playerAmmo--;
   else return;
@@ -273,9 +365,7 @@ function animate() {
   ctx.clearRect(0, 0, gameWidth, gameHeight);
   renderBg();
 
-  livesArr.forEach((life) => {
-    life.draw();
-  });
+  handlePlayerLives();
 
   drawAmmoBar();
   createFlame();
@@ -284,6 +374,8 @@ function animate() {
     obs.draw();
     obs.update();
   });
+  
+  handleAsteroid()
 
   window.requestAnimationFrame(animate);
 }
