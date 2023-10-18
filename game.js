@@ -65,20 +65,22 @@ const player = new Player(
   playerHeight
 );
 
-const playerLives = 5;
+let PLAYERLIVES = 5;
 const livesArr = [];
-for (let i = 0; i < playerLives; i++) {
-  const w = 15,
-    h = 50;
-  if (i == 0) {
-    livesArr.push(new LifeBar(10, 10, w, h, "green"));
-  } else {
-    livesArr.push(
-      new LifeBar(10 + i * (w + 10), 10, w, h, i === 0 ? "red" : "green")
-    );
+(function () {
+  const maxLives = 5;
 
+  for (let i = 0; i < maxLives; i++) {
+    const w = 15,
+      h = 30;
+
+    if (i < PLAYERLIVES) {
+      livesArr.push(new LifeBar(5 + i * (w + 10), 10, w, h, "limegreen"));
+    } else {
+      livesArr.push(new LifeBar(5 + i * (w + 10), 10, w, h, "white"));
+    }
   }
-}
+})();
 
 document.addEventListener("keyup", function () {
   player.angle = 0;
