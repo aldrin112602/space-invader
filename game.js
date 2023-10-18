@@ -94,27 +94,33 @@ document.addEventListener("keydown", function ({ key }) {
 });
 let bgY = 0, x = 0, bgY2 = -(gameHeight - 30);
 
-
 function createFlame() {
   const flameHeight = 100;
   const flameWidth = 20;
   ctx.fillStyle = "orange";
+  ctx.save(); // Save the canvas state
+
+  // Translate to the center of the player's spaceship
+  ctx.translate(player.x + player.width / 2, player.y + player.height);
+
+  // Apply the rotation based on the player's angle
+  ctx.rotate((Math.PI / 180) * player.angle);
+
+  // Move the flame slightly below the spaceship's center
+  const yOffset = 0; // Adjust this value as needed
+  ctx.translate(0, yOffset);
+
+  // Draw the flame
   ctx.beginPath();
-  ctx.moveTo(
-    player.x + player.width / 2 - flameWidth / 2,
-    player.y + player.height
-  );
-  ctx.lineTo(
-    player.x + player.width / 2,
-    player.y + player.height + flameHeight
-  );
-  ctx.lineTo(
-    player.x + player.width / 2 + flameWidth / 2,
-    player.y + player.height
-  );
+  ctx.moveTo(-flameWidth / 2, 0);
+  ctx.lineTo(0, flameHeight);
+  ctx.lineTo(flameWidth / 2, 0);
   ctx.closePath();
   ctx.fill();
+
+  ctx.restore(); // Restore the canvas state
 }
+
 
 function animate() {
   ctx.clearRect(0, 0, gameWidth, gameHeight);
