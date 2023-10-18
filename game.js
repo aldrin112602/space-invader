@@ -40,6 +40,21 @@ class Player {
   update() {}
 }
 
+class LifeBar {
+  constructor(x, y, width, height, color) {
+    this.x = x;
+    this.y = y;
+    this.width = width;
+    this.height = height;
+    this.color = color;
+  }
+
+  draw() {
+    ctx.fillStyle = this.color;
+    ctx.fillRect(this.x, this.y, this.width, this.height);
+  }
+  update() {}
+}
 const playerHeight = 100,
   playerWidth = 100;
 
@@ -49,6 +64,22 @@ const player = new Player(
   playerWidth,
   playerHeight
 );
+
+const playerLives = 5;
+const livesArr = [];
+for (let i = 0; i < playerLives; i++) {
+  const w = 15,
+    h = 50;
+  if (i == 0) {
+    livesArr.push(new LifeBar(10, 10, w, h, "green"));
+  } else {
+    livesArr.push(
+      new LifeBar(10 + i * (w + 10), 10, w, h, i === 0 ? "red" : "green")
+    );
+
+  }
+}
+
 document.addEventListener("keyup", function () {
   player.angle = 0;
 });
@@ -131,22 +162,23 @@ function renderBg() {
   x++;
 }
 
-
 // small devices (cp)
-if(gameWidth < gameHeight) {
-  alert('Use swipe left to move the player to the left ⬅️ and swipe right to move the player to right ➡️')
-  cvs.addEventListener('touchend', function(ev) {
+if (gameWidth < gameHeight) {
+  alert(
+    "Use swipe left to move the player to the left ⬅️ and swipe right to move the player to right ➡️"
+  );
+  cvs.addEventListener("touchend", function (ev) {
     player.angle = 0;
   });
-  
-  cvs.addEventListener('touchmove', function(evt) {
-    evt.preventDefault()
+
+  cvs.addEventListener("touchmove", function (evt) {
+    evt.preventDefault();
     const { clientX, clientY } = evt.touches[0];
-    if(Math.floor(clientX) < gameWidth / 2) {
+    if (Math.floor(clientX) < gameWidth / 2) {
       // left
       if (player.x <= 0) {
-         player.x = 0;
-         return;
+        player.x = 0;
+        return;
       }
       player.angle = -20;
 
@@ -160,13 +192,16 @@ if(gameWidth < gameHeight) {
       player.angle = 20;
       player.x += 50;
     }
-  })
+  });
 }
-
 
 function animate() {
   ctx.clearRect(0, 0, gameWidth, gameHeight);
   renderBg();
+
+  livesArr.forEach((life) => {
+    life.draw();
+  });
   createFlame();
   player.draw();
 
