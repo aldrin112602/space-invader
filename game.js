@@ -58,7 +58,6 @@ document.addEventListener("keydown", function ({ key }) {
   if (!keys.includes(key)) return;
 
   if (key == keys[0]) {
-    // arrow left
     if (player.x <= 0) {
       player.x = 0;
       return;
@@ -67,7 +66,6 @@ document.addEventListener("keydown", function ({ key }) {
 
     player.x -= 50;
   } else if (key == keys[1]) {
-    // arrow right
     if (player.x >= gameWidth - player.width) {
       player.x = gameWidth - player.width;
       return;
@@ -75,14 +73,12 @@ document.addEventListener("keydown", function ({ key }) {
     player.angle = 20;
     player.x += 50;
   } else if (key == keys[2]) {
-    // arrowup
     if (player.y <= 0) {
       player.y = 0;
       return;
     }
     player.y -= 50;
   } else {
-    //  arrow down
     if (player.y >= gameHeight - player.height) {
       player.y = gameHeight - player.height;
       return;
@@ -134,6 +130,39 @@ function renderBg() {
 
   x++;
 }
+
+
+// small devices (cp)
+if(gameWidth < gameHeight) {
+  alert('Use swipe left to move the player to the left ⬅️ and swipe right to move the player to right ➡️')
+  cvs.addEventListener('touchend', function(ev) {
+    player.angle = 0;
+  });
+  
+  cvs.addEventListener('touchmove', function(evt) {
+    evt.preventDefault()
+    const { clientX, clientY } = evt.touches[0];
+    if(Math.floor(clientX) < gameWidth / 2) {
+      // left
+      if (player.x <= 0) {
+         player.x = 0;
+         return;
+      }
+      player.angle = -20;
+
+      player.x -= 50;
+    } else {
+      //right
+      if (player.x >= gameWidth - player.width) {
+        player.x = gameWidth - player.width;
+        return;
+      }
+      player.angle = 20;
+      player.x += 50;
+    }
+  })
+}
+
 
 function animate() {
   ctx.clearRect(0, 0, gameWidth, gameHeight);
