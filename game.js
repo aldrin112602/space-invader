@@ -233,8 +233,8 @@ const sound1 = new Audio("./assets/sounds/outer-sound-1.mp3");
 sound1.loop = true;
 
 document.addEventListener("DOMContentLoaded", function () {
-  // sound1.play();
-  // sound2.play();
+   sound1.play();
+   sound2.play();
 });
 
 document.addEventListener("keyup", function () {
