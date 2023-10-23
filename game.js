@@ -197,6 +197,24 @@ class LobsterMorph {
     }
   }
   
+  
+  class BeetleMorph extends LobsterMorph {
+   
+    update() {
+      this.y += 5
+      
+      if (this.y >= gameHeight) this.readyToPop = true;
+      
+      if (this.gameFrame % this.staggerFrames == 0) {
+        if (this.frameX < ((this.toExplode) ? 2 : 1)) this.frameX++
+        else {
+          (!this.toExplode) && (this.frameX = 0)
+        }
+      }
+      this.gameFrame++
+    }
+  }
+  
 
 const playerHeight = 100,
   playerWidth = 100;
@@ -212,13 +230,12 @@ const player = new Player(
 let asteroids = []
 let lobsterMorphs = []
 let rhinoMorphs = []
-
+let beetleMorphs = []
 
 let playerAmmo = 30;
 const maxAmmo = 30;
 
 
-// Push new LobsterMorph
 setInterval(() => {
   const h = 100, w = 100
   lobsterMorphs.push(new LobsterMorph(Math.floor(Math.random() * (gameWidth - w)), -50, w, h, 1120/14, 320/4,  'assets/lobstermorph.png'))
@@ -227,9 +244,14 @@ setInterval(() => {
 
 setInterval(() => {
   const h = 100, w = 100
-  rhinoMorphs.push(new RhinoMorph(Math.floor(Math.random() * (gameWidth - w)), -50, w, h, 480/6, 320/4,  'assets/rhinomorph.png'))
-}, 5000)
+  beetleMorphs.push(new BeetleMorph(Math.floor(Math.random() * (gameWidth - w)), -50, w, h, 480/6, 320/4,  'assets/beetlemorph.png'))
+}, 15000)
 
+
+setInterval(() => {
+  const h = 100, w = 100
+  rhinoMorphs.push(new RhinoMorph(Math.floor(Math.random() * (gameWidth - w)), -50, w, h, 240/3, 320/4,  'assets/rhinomorphs.png'))
+}, 10000)
 
 
 
@@ -329,6 +351,26 @@ function handleAsteroid() {
   }
 });
 
+
+beetleMorphs.forEach(beetles => {
+  beetles.draw();
+  beetles.update();
+  if (isColliding(player, beetles) && !beetles.toExplode) {
+    beetles.life = 0;
+    if (PLAYERLIVES > 0) {
+      PLAYERLIVES--;
+    }
+  }
+  if (beetles.life <= 0 && !beetles.toExplode) {
+    beetles.toExplode = true;
+    beetles.explodeAudio.play();
+    setTimeout(() => {
+      beetles.readyToPop = true;
+    }, 600);
+  }
+});
+
+
   
   
   asteroids.forEach(asteroid => {
@@ -381,6 +423,19 @@ function handleAsteroid() {
       });
       
       rhinoMorphs = rhinoMorphs.filter(rhinos => !rhinos.readyToPop);
+      
+      
+      beetleMorphs.forEach(beetles => {
+        if (isColliding(obs, beetles) && !obs.readyToPop) {
+          obs.readyToPop = true;
+          if (beetles.life > 0) {
+            beetles.life--;
+          }
+        }
+      });
+
+      beetleMorphs = beetleMorphs.filter(beetles => !beetles.readyToPop);
+
 
       if(obs.y <= 0) obs.readyToPop = true
     })
