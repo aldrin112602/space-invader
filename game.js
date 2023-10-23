@@ -1,4 +1,6 @@
-const cvs = document.querySelector("canvas"),
+function gameStart(parent) {
+  parent.style.display = 'none'
+  const cvs = document.querySelector("canvas"),
   ctx = cvs.getContext("2d");
 const { gameWidth, gameHeight } = {
   gameWidth: innerWidth,
@@ -7,6 +9,7 @@ const { gameWidth, gameHeight } = {
 
 cvs.width = gameWidth;
 cvs.height = gameHeight;
+let PLAYERLIVES = 5;
 
 class Player {
   constructor(x, y, width, height) {
@@ -89,6 +92,9 @@ class Asteroid {
     this.toExplode = false;
     this.staggerFrames = 6;
     this.gameFrame = 0;
+    this.life = 3;
+    this.Yvelocity = Math.floor(Math.random() * 7) + 1;
+    this.explodeAudio = new Audio(`assets/sounds/explosion1.wav`)
   }
 
   draw() {
@@ -109,7 +115,19 @@ class Asteroid {
   }
 
   update() {
-    this.y += 3;
+    this.y += this.Yvelocity
+    
+    
+    if(this.life <= 0) {
+      this.toExplode = true
+      this.explodeAudio.play();
+      
+      
+      setTimeout(() => {
+        this.readyToPop = true
+      }, 500)
+    }
+    
     if (this.toExplode && (this.gameFrame % this.staggerFrames) == 0) {
       if (this.currentFrame < this.frameCount) {
         this.currentFrame++;
@@ -132,9 +150,9 @@ const player = new Player(
 );
 
 
-const asteroids = []
+let asteroids = []
 
-let PLAYERLIVES = 5;
+
 
 
 let playerAmmo = 30;
@@ -184,7 +202,7 @@ setInterval(function () {
 setInterval(function () {
   const h = 60, w = 60
   asteroids.push(new Asteroid(Math.floor(Math.random() * (gameWidth - w)), -50, w, h))
-}, 5000)
+}, 2000)
 
 function isColliding(rect1, rect2) {
     return (
@@ -195,11 +213,16 @@ function isColliding(rect1, rect2) {
     );
 }
 
+
+
 function handleAsteroid() {
-  asteroids.filter(e => !e.readyToPop)
-  .forEach(asteroid => {
-    if(isColliding(asteroid, player)) {
-      const explodeAudio = new Audio(`assets/sounds/explosion${Math.floor(Math.random()) + 1}.wav`)
+  asteroids.forEach(asteroid => {
+    asteroid.draw()
+    asteroid.update()
+    
+    
+    if(isColliding(asteroid, player) && !asteroid.toExplode) {
+      const explodeAudio = new Audio(`assets/sounds/explosion2.wav`)
       asteroid.toExplode = true
       if(window.navigator.vibrate) {
         navigator.vibrate([200])
@@ -214,9 +237,26 @@ function handleAsteroid() {
       
       
     }
-    asteroid.draw()
-    asteroid.update()
-  })
+    
+    obstacles.forEach(obs => {
+      if(isColliding(obs, asteroid) && !obs.readyToPop) {
+        obs.readyToPop = true
+        asteroid.life--;
+      }
+      
+      if(obs.y <= 0) obs.readyToPop = true
+    })
+    
+    
+    
+    obstacles = obstacles.filter(obs => !obs.readyToPop)
+    
+    
+    
+  });
+  
+  asteroids = asteroids.filter(v => !v.readyToPop);
+  
 }
 cvs.addEventListener("click", function () {
   if (playerAmmo > 0) playerAmmo--;
@@ -232,9 +272,13 @@ sound2.loop = true;
 const sound1 = new Audio("./assets/sounds/outer-sound-1.mp3");
 sound1.loop = true;
 
-document.addEventListener("DOMContentLoaded", function () {
-   sound1.play();
-   sound2.play();
+let isStart = false;
+document.addEventListener("click", function () {
+   if(!isStart) {
+     sound1.play();
+     sound2.play();
+     isStart = true;
+   }
 });
 
 document.addEventListener("keyup", function () {
@@ -321,8 +365,8 @@ function renderBg() {
     bgY2 = -(gameHeight - 60);
   }
   if (x % 2 == 0) {
-    bgY += 10;
-    bgY2 += 10;
+    bgY += 20;
+    bgY2 += 20;
   }
 
   x++;
@@ -361,23 +405,18 @@ if (gameWidth < gameHeight) {
   });
 }
 
+
 function animate() {
   ctx.clearRect(0, 0, gameWidth, gameHeight);
   renderBg();
-
-  handlePlayerLives();
-
-  drawAmmoBar();
   createFlame();
   player.draw();
-  obstacles.forEach((obs) => {
-    obs.draw();
-    obs.update();
-  });
-  
-  handleAsteroid()
-
+  obstacles.forEach(obs => {obs.draw();obs.update();})
+  handleAsteroid();
+  drawAmmoBar();
+  handlePlayerLives();
   window.requestAnimationFrame(animate);
 }
 
 animate();
+      }
