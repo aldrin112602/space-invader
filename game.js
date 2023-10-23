@@ -1,628 +1,223 @@
-function gameStart(parent) {
-  parent.style.display = 'none'
-  const cvs = document.querySelector("canvas"),
-  ctx = cvs.getContext("2d");
-const { gameWidth, gameHeight } = {
-  gameWidth: innerWidth,
-  gameHeight: innerHeight,
-};
+function gameStart(t) {
+	t.style.display = "none";
+	let e = document.querySelector("canvas"),
+		i = e.getContext("2d"),
+		{
+			gameWidth: s,
+			gameHeight: o
+		} = {
+			gameWidth: innerWidth,
+			gameHeight: innerHeight
+		};
+	e.width = s, e.height = o;
+	let h = 5;
+	class a {
+		constructor(t, e, i, s, o) {
+			this.width = i, this.height = s, this.x = t, this.y = e, this.color = o
+		}
+		draw() {
+			i.fillStyle = this.color, i.fillRect(this.x, this.y, this.width, this.height)
+		}
+		update() {
+			this.y -= 10
+		}
+	}
+	class r {
+		constructor(t, e, i, s, o) {
+			this.x = t, this.y = e, this.width = i, this.height = s, this.color = o
+		}
+		draw() {
+			i.fillStyle = this.color, i.fillRect(this.x, this.y, this.width, this.height)
+		}
+		update() {}
+	}
+	class $ {
+		constructor(t, e, i, s) {
+			this.x = t, this.y = e, this.width = i, this.height = s, this.frameWidth = 80, this.frameHeight = 80, this.currentFrame = 0, this.frameCount = 7, this.rowCount = 4, this.readyToPop = !1, this.toExplode = !1, this.staggerFrames = 6, this.gameFrame = 0, this.life = 3, this.Yvelocity = Math.floor(7 * Math.random()) + 1, this.explodeAudio = new Audio("assets/sounds/explosion1.wav")
+		}
+		draw() {
+			let t = new Image;
+			t.src = "./assets/asteroid.png", i.drawImage(t, this.currentFrame * this.frameWidth, 0, this.frameWidth, this.frameHeight, this.x, this.y, this.width, this.height)
+		}
+		update() {
+			this.y += this.Yvelocity, this.life <= 0 && (this.toExplode = !0, this.explodeAudio.play(), setTimeout(() => {
+				this.readyToPop = !0
+			}, 500)), this.toExplode && this.gameFrame % this.staggerFrames == 0 && this.currentFrame < this.frameCount && this.currentFrame++, this.gameFrame++
+		}
+	}
+	class l {
+		constructor(t, e, i, s, o, h, a) {
+			this.src = a, this.spriteWidth = o, this.spriteHeight = h, this.width = i, this.height = s, this.x = t, this.y = e, this.frameX = 0, this.frameY = Math.floor(4 * Math.random()), this.gameFrame = 0, this.staggerFrames = 4, this.toExplode = !1, this.readyToPop = !1, this.life = 2, this.explodeAudio = new Audio("assets/sounds/explosion1.wav")
+		}
+		draw() {
+			let t = new Image;
+			t.src = this.src, i.drawImage(t, this.frameX * this.spriteWidth, this.frameY * this.spriteHeight, this.spriteWidth, this.spriteHeight, this.x, this.y, this.width, this.height)
+		}
+		update() {
+			this.y += 5, this.y >= o && (this.readyToPop = !0), this.gameFrame % this.staggerFrames == 0 && (this.frameX < (this.toExplode ? 14 : 7) ? this.frameX++ : this.toExplode || (this.frameX = 0)), this.gameFrame++
+		}
+	}
+	class d extends l {
+		update() {
+			this.y += 5, this.y >= o && (this.readyToPop = !0), this.gameFrame % this.staggerFrames == 0 && (this.frameX < (this.toExplode ? 6 : 4) ? this.frameX++ : this.toExplode || (this.frameX = 0)), this.gameFrame++
+		}
+	}
+	class n extends l {
+		update() {
+			this.y += 5, this.y >= o && (this.readyToPop = !0), this.gameFrame % this.staggerFrames == 0 && (this.frameX < (this.toExplode ? 2 : 1) ? this.frameX++ : this.toExplode || (this.frameX = 0)), this.gameFrame++
+		}
+	}
+	let p = new class t {
+			constructor(t, e, i, s) {
+				this.x = t, this.y = e, this.width = i, this.height = s, this.angle = 0
+			}
+			draw() {
+				let t = new Image;
+				t.src = "./assets/player.png", i.save(), i.translate(this.x + this.width / 2, this.y + this.height / 2), i.rotate(Math.PI / 180 * this.angle), i.drawImage(t, -this.width / 2, -this.height / 2, this.width, this.height), i.restore()
+			}
+			update() {}
+		}(s / 2 - 50, o - 200, 100, 100),
+		f = [],
+		g = [],
+		y = [],
+		u = [],
+		m = 30;
+	setInterval(() => {
+		g.push(new l(Math.floor(Math.random() * (s - 100)), -50, 100, 100, 80, 80, "assets/lobstermorph.png"))
+	}, 7e3), setInterval(() => {
+		u.push(new n(Math.floor(Math.random() * (s - 100)), -50, 100, 100, 80, 80, "assets/beetlemorph.png"))
+	}, 15e3), setInterval(() => {
+		y.push(new d(Math.floor(Math.random() * (s - 100)), -50, 100, 100, 80, 80, "assets/rhinomorphs.png"))
+	}, 1e4);
+	let c = [];
 
-cvs.width = gameWidth;
-cvs.height = gameHeight;
-let PLAYERLIVES = 5;
-
-class Player {
-  constructor(x, y, width, height) {
-    this.x = x;
-    this.y = y;
-    this.width = width;
-    this.height = height;
-    this.angle = 0;
-  }
-
-  draw() {
-    const image = new Image();
-    image.src = "./assets/player.png";
-
-    ctx.save();
-    ctx.translate(this.x + this.width / 2, this.y + this.height / 2);
-    ctx.rotate((Math.PI / 180) * this.angle);
-
-    ctx.drawImage(
-      image,
-      -this.width / 2,
-      -this.height / 2,
-      this.width,
-      this.height
-    );
-
-    ctx.restore();
-  }
-
-  update() {}
-}
-
-class Obstacle {
-  constructor(x, y, width, height, color) {
-    this.width = width;
-    this.height = height;
-    this.x = x;
-    this.y = y;
-    this.color = color;
-  }
-
-  draw() {
-    ctx.fillStyle = this.color;
-    ctx.fillRect(this.x, this.y, this.width, this.height);
-  }
-
-  update() {
-    this.y -= 10;
-  }
-}
-
-class LifeBar {
-  constructor(x, y, width, height, color) {
-    this.x = x;
-    this.y = y;
-    this.width = width;
-    this.height = height;
-    this.color = color;
-  }
-
-  draw() {
-    ctx.fillStyle = this.color;
-    ctx.fillRect(this.x, this.y, this.width, this.height);
-  }
-  update() {}
-}
-
-class Asteroid {
-  constructor(x, y, width, height) {
-    this.x = x;
-    this.y = y;
-    this.width = width;
-    this.height = height;
-    this.frameWidth = 560 / 7;
-    this.frameHeight = 320 / 4;
-    this.currentFrame = 0;
-    this.frameCount = 7;
-    this.rowCount = 4;
-    this.readyToPop = false;
-    this.toExplode = false;
-    this.staggerFrames = 6;
-    this.gameFrame = 0;
-    this.life = 3;
-    this.Yvelocity = Math.floor(Math.random() * 7) + 1;
-    this.explodeAudio = new Audio(`assets/sounds/explosion1.wav`)
-  }
-
-  draw() {
-    const image = new Image();
-    image.src = "./assets/asteroid.png";
-
-    ctx.drawImage(
-      image,
-      this.currentFrame * this.frameWidth,
-      0,
-      this.frameWidth,
-      this.frameHeight,
-      this.x,
-      this.y,
-      this.width,
-      this.height
-    );
-  }
-
-  update() {
-    this.y += this.Yvelocity
-    
-    
-    if(this.life <= 0) {
-      this.toExplode = true
-      this.explodeAudio.play();
-      
-      
-      setTimeout(() => {
-        this.readyToPop = true
-      }, 500)
-    }
-    
-    if (this.toExplode && (this.gameFrame % this.staggerFrames) == 0) {
-      if (this.currentFrame < this.frameCount) {
-        this.currentFrame++;
-      }
-    }
-    
-    this.gameFrame++;
-    
-  }
-}
-
-
-class LobsterMorph {
-    constructor(x, y, w, h, sw, sh, src) {
-      this.src = src;
-      this.spriteWidth = sw
-      this.spriteHeight = sh
-      this.width = w;
-      this.height = h;
-      this.x = x
-      this.y = y
-      this.frameX = 0;
-      this.frameY = Math.floor(Math.random() * 4);
-      this.gameFrame = 0;
-      this.staggerFrames = 4;
-      this.toExplode = false;
-      this.readyToPop = false;
-      this.life = 2;
-      this.explodeAudio = new Audio(`assets/sounds/explosion1.wav`)
-    }
-    draw() {
-      const lobstermorph = new Image();
-      lobstermorph.src = this.src;
-      ctx.drawImage(lobstermorph, this.frameX * this.spriteWidth, this.frameY * this.spriteHeight, this.spriteWidth, this.spriteHeight, this.x, this.y, this.width, this.height);
-    }
-    update() {
-      this.y += 5
-      
-      if(this.y >= gameHeight) this.readyToPop = true;
-      
-      if(this.gameFrame % this.staggerFrames == 0) {
-        if(this.frameX < ((this.toExplode) ? 14 : 7)) this.frameX++
-        else {
-          (!this.toExplode) && (this.frameX = 0)
+	function w(t, e) {
+		return t.x < e.x + e.width && t.x + t.width > e.x && t.y < e.y + e.height && t.y + t.height > e.y
+	}
+	setInterval(function() {
+		!(m >= 30) && m++
+	}, 600), setInterval(function() {
+		f.push(new $(Math.floor(Math.random() * (s - 60)), -50, 60, 60))
+	}, 7e3), e.addEventListener("click", function() {
+		if (m > 0) {
+			m--, c.push(new a(p.x + p.width / 2, p.y + 50, 3, 10, "orange"));
+			new Audio("./assets/sounds/shot.wav").play()
+		}
+	});
+	let x = new Audio("./assets/sounds/outer-sound-2.mp3");
+	x.loop = !0;
+	let _ = new Audio("./assets/sounds/outer-sound-1.mp3");
+	_.loop = !0;
+	let E = !1;
+	document.addEventListener("click", function() {
+		E || (_.play(), x.play(), E = !0)
+	}), document.addEventListener("keyup", function() {
+		p.angle = 0
+	}), document.addEventListener("keydown", function({
+		key: t
+	}) {
+		if (t = t.toLowerCase(), (keys = ["arrowleft", "arrowright", "arrowup", "arrowdown", "a", "w", "s", "d", ]).includes(t)) {
+			if (t == keys[0] || "a" == t) {
+				if (p.x <= 0) {
+					p.x = 0;
+					return
+				}
+				p.angle = -20, p.x -= 10
+			} else if (t == keys[1] || "d" == t) {
+				if (p.x >= s - p.width) {
+					p.x = s - p.width;
+					return
+				}
+				p.angle = 20, p.x += 10
+			} else if (t == keys[2] || "w" == t) {
+				if (p.y <= 0) {
+					p.y = 0;
+					return
+				}
+				p.y -= 10
+			} else {
+				if (p.y >= o - p.height) {
+					p.y = o - p.height;
+					return
+				}
+				p.y += 10
+			}
+		}
+	});
+	let v = 0,
+		P = 0,
+		T = -(o - 30);
+	s < o && (alert("Use swipe left to move the player to the left ⬅️ and swipe right to move the player to right ➡️"), e.addEventListener("touchend", function(t) {
+		p.angle = 0
+	}), e.addEventListener("touchmove", function(t) {
+		t.preventDefault();
+		let {
+			clientX: e,
+			clientY: i
+		} = t.touches[0];
+		if (Math.floor(e) < s / 2) {
+			if (p.x <= 0) {
+				p.x = 0;
+				return
+			}
+			p.angle = -20, p.x -= 10
+		} else {
+			if (p.x >= s - p.width) {
+				p.x = s - p.width;
+				return
+			}
+			p.angle = 20, p.x += 10
+		}
+	})), ! function t() {
+		i.clearRect(0, 0, s, o),
+			function t() {
+				let e = new Image;
+				e.src = "./assets/bg.png", i.drawImage(e, 0, v, s, o);
+				let h = new Image;
+				h.src = "./assets/bg.png", i.drawImage(h, 0, T, s, o), v >= o && (v = -(o - 60)), T >= o && (T = -(o - 60)), P % 2 == 0 && (v += 20, T += 20), P++
+			}(), i.fillStyle = "orange", i.save(), i.translate(p.x + p.width / 2, p.y + p.height / 2), i.rotate(Math.PI / 180 * p.angle), i.beginPath(), i.moveTo(-10, 0), i.lineTo(0, 100), i.lineTo(10, 0), i.closePath(), i.fill(), i.restore(), p.draw(), c.forEach(t => {
+				t.draw(), t.update()
+			}), g.forEach(t => {
+				t.draw(), t.update(), w(p, t) && !t.toExplode && (t.life = 0, window.navigator.vibrate && navigator.vibrate([10, 10, 10]), h > 0 && h--), t.life <= 0 && !t.toExplode && (t.toExplode = !0, t.explodeAudio.play(), setTimeout(() => {
+					t.readyToPop = !0
+				}, 600))
+			}), y.forEach(t => {
+				t.draw(), t.update(), w(p, t) && !t.toExplode && (t.life = 0, window.navigator.vibrate && navigator.vibrate([10, 10, 10]), h > 0 && h--), t.life <= 0 && !t.toExplode && (t.toExplode = !0, t.explodeAudio.play(), setTimeout(() => {
+					t.readyToPop = !0
+				}, 600))
+			}), u.forEach(t => {
+				t.draw(), t.update(), w(p, t) && !t.toExplode && (t.life = 0, window.navigator.vibrate && navigator.vibrate([10, 10, 10]), h > 0 && h--), t.life <= 0 && !t.toExplode && (t.toExplode = !0, t.explodeAudio.play(), setTimeout(() => {
+					t.readyToPop = !0
+				}, 600))
+			}), f.forEach(t => {
+				if (t.draw(), t.update(), w(t, p) && !t.toExplode) {
+					let e = new Audio("assets/sounds/explosion2.wav");
+					t.toExplode = !0, window.navigator.vibrate && navigator.vibrate([10, 10, 100]), e.play(), window.navigator.vibrate && navigator.vibrate([10, 10, 10]), setTimeout(() => {
+						t.readyToPop = !0, h--
+					}, 500)
+				}
+				c.forEach(e => {
+					w(e, t) && !e.readyToPop && (e.readyToPop = !0, t.life--), g.forEach(t => {
+						w(e, t) && !e.readyToPop && (e.readyToPop = !0, t.life > 0 && t.life--), g = g.filter(t => !t.readyToPop)
+					}), y.forEach(t => {
+						w(e, t) && !e.readyToPop && (e.readyToPop = !0, t.life > 0 && t.life--)
+					}), y = y.filter(t => !t.readyToPop), u.forEach(t => {
+						w(e, t) && !e.readyToPop && (e.readyToPop = !0, t.life > 0 && t.life--)
+					}), u = u.filter(t => !t.readyToPop), e.y <= 0 && (e.readyToPop = !0)
+				}), c = c.filter(t => !t.readyToPop)
+			}), f = f.filter(t => !t.readyToPop),
+			function t() {
+				let e = o > s ? 150 : 400,
+					h = s - e - 10,
+					a = m / 30 * e;
+				i.fillStyle = "gray", i.fillRect(h, 10, e, 20), i.fillStyle = "blue", i.fillRect(h, 10, a, 20)
+			}(),
+			function t() {
+				let e = [];
+				for (let i = 0; i < 5; i++) i < h ? e.push(new r(5 + 25 * i, 10, 15, 30, "limegreen")) : e.push(new r(5 + 25 * i, 10, 15, 30, "white"));
+				e.forEach(t => {
+					t.draw()
+				})
+			}(), window.requestAnimationFrame(t)
+	}()
         }
-      }
-      
-      
-      this.gameFrame++
-      
-    }
-  }
-  
-  class RhinoMorph extends LobsterMorph {
-    update() {
-      this.y += 5
-      
-      if (this.y >= gameHeight) this.readyToPop = true;
-      
-      if (this.gameFrame % this.staggerFrames == 0) {
-        if (this.frameX < ((this.toExplode) ? 6 : 4)) this.frameX++
-        else {
-          (!this.toExplode) && (this.frameX = 0)
-        }
-      }
-      this.gameFrame++
-    }
-  }
-  
-  
-  class BeetleMorph extends LobsterMorph {
-   
-    update() {
-      this.y += 5
-      
-      if (this.y >= gameHeight) this.readyToPop = true;
-      
-      if (this.gameFrame % this.staggerFrames == 0) {
-        if (this.frameX < ((this.toExplode) ? 2 : 1)) this.frameX++
-        else {
-          (!this.toExplode) && (this.frameX = 0)
-        }
-      }
-      this.gameFrame++
-    }
-  }
-  
-
-const playerHeight = 100,
-  playerWidth = 100;
-
-const player = new Player(
-  gameWidth / 2 - playerWidth / 2,
-  gameHeight - playerHeight * 2,
-  playerWidth,
-  playerHeight
-);
-
-
-let asteroids = []
-let lobsterMorphs = []
-let rhinoMorphs = []
-let beetleMorphs = []
-
-let playerAmmo = 30;
-const maxAmmo = 30;
-
-
-setInterval(() => {
-  const h = 100, w = 100
-  lobsterMorphs.push(new LobsterMorph(Math.floor(Math.random() * (gameWidth - w)), -50, w, h, 1120/14, 320/4,  'assets/lobstermorph.png'))
-}, 7000)
-
-
-setInterval(() => {
-  const h = 100, w = 100
-  beetleMorphs.push(new BeetleMorph(Math.floor(Math.random() * (gameWidth - w)), -50, w, h, 480/6, 320/4,  'assets/beetlemorph.png'))
-}, 15000)
-
-
-setInterval(() => {
-  const h = 100, w = 100
-  rhinoMorphs.push(new RhinoMorph(Math.floor(Math.random() * (gameWidth - w)), -50, w, h, 240/3, 320/4,  'assets/rhinomorphs.png'))
-}, 10000)
-
-
-
-function handlePlayerLives() {
-  const livesArr = [];
-  const maxLives = 5;
-
-  for (let i = 0; i < maxLives; i++) {
-    const w = 15,
-      h = 30;
-
-    if (i < PLAYERLIVES) {
-      livesArr.push(new LifeBar(5 + i * (w + 10), 10, w, h, "limegreen"));
-    } else {
-      livesArr.push(new LifeBar(5 + i * (w + 10), 10, w, h, "white"));
-    }
-  }
-  
-  livesArr.forEach((life) => {
-    life.draw();
-  });
-}
-
-let obstacles = [];
-
-function drawAmmoBar() {
-  const barWidth = gameHeight > gameWidth ? 150 : 400;
-  const barHeight = 20;
-  const x = gameWidth - barWidth - 10;
-  const y = 10;
-  const color = "blue";
-  const filledWidth = (playerAmmo / maxAmmo) * barWidth;
-
-  ctx.fillStyle = "gray";
-  ctx.fillRect(x, y, barWidth, barHeight);
-
-  ctx.fillStyle = color;
-  ctx.fillRect(x, y, filledWidth, barHeight);
-}
-
-setInterval(function () {
-  if (playerAmmo >= maxAmmo) return;
-  playerAmmo++;
-}, 600);
-setInterval(function () {
-  const h = 60, w = 60
-  asteroids.push(new Asteroid(Math.floor(Math.random() * (gameWidth - w)), -50, w, h))
-}, 7000)
-
-function isColliding(rect1, rect2) {
-    return (
-        rect1.x < rect2.x + rect2.width &&
-        rect1.x + rect1.width > rect2.x &&
-        rect1.y < rect2.y + rect2.height &&
-        rect1.y + rect1.height > rect2.y
-    );
-}
-
-
-
-function handleAsteroid() {
-  lobsterMorphs.forEach(lobs => {
-    lobs.draw()
-    lobs.update()
-    if(isColliding(player, lobs) && !lobs.toExplode) {
-      lobs.life = 0
-      if (window.navigator.vibrate) {
-        navigator.vibrate([10, 10, 10])
-      }
-      if(PLAYERLIVES > 0) {
-        PLAYERLIVES--
-      }
-    }
-    if(lobs.life <= 0 && !lobs.toExplode) {
-      lobs.toExplode = true
-      lobs.explodeAudio.play()
-      setTimeout(()=> {
-        lobs.readyToPop = true
-      }, 600)
-    }
-  });
-  
-  
-  
-  rhinoMorphs.forEach(rhinos => {
-  rhinos.draw();
-  rhinos.update();
-  if (isColliding(player, rhinos) && !rhinos.toExplode) {
-    rhinos.life = 0;
-    if (window.navigator.vibrate) {
-      navigator.vibrate([10, 10, 10])
-    }
-    if (PLAYERLIVES > 0) {
-      PLAYERLIVES--;
-    }
-  }
-  if (rhinos.life <= 0 && !rhinos.toExplode) {
-    rhinos.toExplode = true;
-    rhinos.explodeAudio.play();
-    setTimeout(() => {
-      rhinos.readyToPop = true;
-    }, 600);
-  }
-});
-
-
-beetleMorphs.forEach(beetles => {
-  beetles.draw();
-  beetles.update();
-  if (isColliding(player, beetles) && !beetles.toExplode) {
-    beetles.life = 0;
-    if (window.navigator.vibrate) {
-      navigator.vibrate([10, 10, 10])
-    }
-    if (PLAYERLIVES > 0) {
-      PLAYERLIVES--;
-    }
-  }
-  if (beetles.life <= 0 && !beetles.toExplode) {
-    beetles.toExplode = true;
-    beetles.explodeAudio.play();
-    setTimeout(() => {
-      beetles.readyToPop = true;
-    }, 600);
-  }
-});
-
-
-  
-  
-  asteroids.forEach(asteroid => {
-    asteroid.draw()
-    asteroid.update()
-    
-    
-    if(isColliding(asteroid, player) && !asteroid.toExplode) {
-      const explodeAudio = new Audio(`assets/sounds/explosion2.wav`)
-      asteroid.toExplode = true
-      if(window.navigator.vibrate) {
-        navigator.vibrate([10, 10, 100])
-      }
-      explodeAudio.play();
-      if(window.navigator.vibrate) {
-        navigator.vibrate([10, 10, 10])
-      }
-      
-      setTimeout(() => {
-        asteroid.readyToPop = true
-        PLAYERLIVES--
-        return
-      }, 500)
-      
-      
-    }
-    
-    obstacles.forEach(obs => {
-      if(isColliding(obs, asteroid) && !obs.readyToPop) {
-        obs.readyToPop = true
-        asteroid.life--;
-      }
-      
-      
-      lobsterMorphs.forEach(lobs => {
-        if(isColliding(obs, lobs) && !obs.readyToPop) {
-          obs.readyToPop = true
-          lobs.life > 0 && lobs.life--;
-        }
-        
-        lobsterMorphs = lobsterMorphs.filter(v => !v.readyToPop)
-       
-      });
-      
-      
-      rhinoMorphs.forEach(rhinos => {
-        if (isColliding(obs, rhinos) && !obs.readyToPop) {
-          obs.readyToPop = true;
-          if (rhinos.life > 0) {
-            rhinos.life--;
-          }
-        }
-      });
-      
-      rhinoMorphs = rhinoMorphs.filter(rhinos => !rhinos.readyToPop);
-      
-      
-      beetleMorphs.forEach(beetles => {
-        if (isColliding(obs, beetles) && !obs.readyToPop) {
-          obs.readyToPop = true;
-          if (beetles.life > 0) {
-            beetles.life--;
-          }
-        }
-      });
-
-      beetleMorphs = beetleMorphs.filter(beetles => !beetles.readyToPop);
-
-
-      if(obs.y <= 0) obs.readyToPop = true
-    })
-    obstacles = obstacles.filter(obs => !obs.readyToPop)
-  });
-  
-  
-  
-  
-  asteroids = asteroids.filter(v => !v.readyToPop);
-  
-}
-cvs.addEventListener("click", function () {
-  if (playerAmmo > 0) playerAmmo--;
-  else return;
-  obstacles.push(
-    new Obstacle(player.x + player.width / 2, player.y + 50, 3, 10, "orange")
-  );
-  let shotSound = new Audio("./assets/sounds/shot.wav");
-  shotSound.play();
-});
-const sound2 = new Audio("./assets/sounds/outer-sound-2.mp3");
-sound2.loop = true;
-const sound1 = new Audio("./assets/sounds/outer-sound-1.mp3");
-sound1.loop = true;
-
-let isStart = false;
-document.addEventListener("click", function () {
-   if(!isStart) {
-     sound1.play();
-     sound2.play();
-     isStart = true;
-   }
-});
-
-document.addEventListener("keyup", function () {
-  player.angle = 0;
-});
-document.addEventListener("keydown", function ({ key }) {
-  (key = key.toLowerCase()),
-    (keys = [
-      "arrowleft",
-      "arrowright",
-      "arrowup",
-      "arrowdown",
-      "a",
-      "w",
-      "s",
-      "d",
-    ]);
-  if (!keys.includes(key)) return;
-
-  if (key == keys[0] || key == "a") {
-    if (player.x <= 0) {
-      player.x = 0;
-      return;
-    }
-    player.angle = -20;
-
-    player.x -= 10;
-  } else if (key == keys[1] || key == "d") {
-    if (player.x >= gameWidth - player.width) {
-      player.x = gameWidth - player.width;
-      return;
-    }
-    player.angle = 20;
-    player.x += 10;
-  } else if (key == keys[2] || key == "w") {
-    if (player.y <= 0) {
-      player.y = 0;
-      return;
-    }
-    player.y -= 10;
-  } else {
-    if (player.y >= gameHeight - player.height) {
-      player.y = gameHeight - player.height;
-      return;
-    }
-    player.y += 10;
-  }
-});
-let bgY = 0,
-  x = 0,
-  bgY2 = -(gameHeight - 30);
-
-function createFlame() {
-  const flameHeight = 100;
-  const flameWidth = 20;
-  ctx.fillStyle = "orange";
-  ctx.save();
-  ctx.translate(player.x + player.width / 2, player.y + player.height / 2);
-  ctx.rotate((Math.PI / 180) * player.angle);
-
-  ctx.beginPath();
-  ctx.moveTo(-flameWidth / 2, 0);
-  ctx.lineTo(0, flameHeight);
-  ctx.lineTo(flameWidth / 2, 0);
-  ctx.closePath();
-  ctx.fill();
-
-  ctx.restore();
-}
-
-function renderBg() {
-  const bg1 = new Image();
-  bg1.src = "./assets/bg.png";
-  ctx.drawImage(bg1, 0, bgY, gameWidth, gameHeight);
-
-  const bg2 = new Image();
-  bg2.src = "./assets/bg.png";
-  ctx.drawImage(bg2, 0, bgY2, gameWidth, gameHeight);
-
-  if (bgY >= gameHeight) {
-    bgY = -(gameHeight - 60);
-  }
-  if (bgY2 >= gameHeight) {
-    bgY2 = -(gameHeight - 60);
-  }
-  if (x % 2 == 0) {
-    bgY += 20;
-    bgY2 += 20;
-  }
-
-  x++;
-}
-
-if (gameWidth < gameHeight) {
-  alert(
-    "Use swipe left to move the player to the left ⬅️ and swipe right to move the player to right ➡️"
-  ); 
-  cvs.addEventListener("touchend", function (ev) {
-    player.angle = 0;
-  });
-
-  cvs.addEventListener("touchmove", function (evt) {
-    evt.preventDefault();
-    const { clientX, clientY } = evt.touches[0];
-    if (Math.floor(clientX) < gameWidth / 2) {
-      
-      if (player.x <= 0) {
-        player.x = 0;
-        return;
-      }
-      player.angle = -20;
-
-      player.x -= 10;
-    } else {
-      
-      if (player.x >= gameWidth - player.width) {
-        player.x = gameWidth - player.width;
-        return;
-      }
-      player.angle = 20;
-      player.x += 10;
-    }
-  });
-}
-
-
-function animate() {
-  ctx.clearRect(0, 0, gameWidth, gameHeight);
-  renderBg();
-  createFlame();
-  player.draw();
-  
-  obstacles.forEach(obs => {
-    obs.draw();
-    obs.update();
-  })
-  
-  handleAsteroid();
-  drawAmmoBar();
-  handlePlayerLives();
-  window.requestAnimationFrame(animate);
-}
-
- animate();
-}
