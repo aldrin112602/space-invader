@@ -318,6 +318,9 @@ function handleAsteroid() {
     lobs.update()
     if(isColliding(player, lobs) && !lobs.toExplode) {
       lobs.life = 0
+      if (window.navigator.vibrate) {
+        navigator.vibrate([10, 10, 10])
+      }
       if(PLAYERLIVES > 0) {
         PLAYERLIVES--
       }
@@ -338,6 +341,9 @@ function handleAsteroid() {
   rhinos.update();
   if (isColliding(player, rhinos) && !rhinos.toExplode) {
     rhinos.life = 0;
+    if (window.navigator.vibrate) {
+      navigator.vibrate([10, 10, 10])
+    }
     if (PLAYERLIVES > 0) {
       PLAYERLIVES--;
     }
@@ -357,6 +363,9 @@ beetleMorphs.forEach(beetles => {
   beetles.update();
   if (isColliding(player, beetles) && !beetles.toExplode) {
     beetles.life = 0;
+    if (window.navigator.vibrate) {
+      navigator.vibrate([10, 10, 10])
+    }
     if (PLAYERLIVES > 0) {
       PLAYERLIVES--;
     }
@@ -382,9 +391,12 @@ beetleMorphs.forEach(beetles => {
       const explodeAudio = new Audio(`assets/sounds/explosion2.wav`)
       asteroid.toExplode = true
       if(window.navigator.vibrate) {
-        navigator.vibrate([200])
+        navigator.vibrate([10, 10, 100])
       }
       explodeAudio.play();
+      if(window.navigator.vibrate) {
+        navigator.vibrate([10, 10, 10])
+      }
       
       setTimeout(() => {
         asteroid.readyToPop = true
@@ -562,11 +574,10 @@ function renderBg() {
   x++;
 }
 
-// small devices (cp)
 if (gameWidth < gameHeight) {
-  /*alert(
+  alert(
     "Use swipe left to move the player to the left ⬅️ and swipe right to move the player to right ➡️"
-  ); */
+  ); 
   cvs.addEventListener("touchend", function (ev) {
     player.angle = 0;
   });
@@ -575,7 +586,7 @@ if (gameWidth < gameHeight) {
     evt.preventDefault();
     const { clientX, clientY } = evt.touches[0];
     if (Math.floor(clientX) < gameWidth / 2) {
-      // left
+      
       if (player.x <= 0) {
         player.x = 0;
         return;
@@ -584,7 +595,7 @@ if (gameWidth < gameHeight) {
 
       player.x -= 10;
     } else {
-      //right
+      
       if (player.x >= gameWidth - player.width) {
         player.x = gameWidth - player.width;
         return;
@@ -613,5 +624,5 @@ function animate() {
   window.requestAnimationFrame(animate);
 }
 
-animate();
-              }
+ animate();
+}
