@@ -138,7 +138,66 @@ class Asteroid {
     
   }
 }
- 
+
+
+class LobsterMorph {
+    constructor(x, y, w, h, sw, sh, src) {
+      this.src = src;
+      this.spriteWidth = sw
+      this.spriteHeight = sh
+      this.width = w;
+      this.height = h;
+      this.x = x
+      this.y = y
+      this.frameX = 0;
+      this.frameY = Math.floor(Math.random() * 4);
+      this.gameFrame = 0;
+      this.staggerFrames = 4;
+      this.toExplode = false;
+      this.readyToPop = false;
+      this.life = 2;
+      this.explodeAudio = new Audio(`assets/sounds/explosion1.wav`)
+    }
+    draw() {
+      const lobstermorph = new Image();
+      lobstermorph.src = this.src;
+      ctx.drawImage(lobstermorph, this.frameX * this.spriteWidth, this.frameY * this.spriteHeight, this.spriteWidth, this.spriteHeight, this.x, this.y, this.width, this.height);
+    }
+    update() {
+      this.y += 5
+      
+      if(this.y >= gameHeight) this.readyToPop = true;
+      
+      if(this.gameFrame % this.staggerFrames == 0) {
+        if(this.frameX < ((this.toExplode) ? 14 : 7)) this.frameX++
+        else {
+          (!this.toExplode) && (this.frameX = 0)
+        }
+      }
+      
+      
+      this.gameFrame++
+      
+    }
+  }
+  
+  class RhinoMorph extends LobsterMorph {
+    update() {
+      this.y += 5
+      
+      if (this.y >= gameHeight) this.readyToPop = true;
+      
+      if (this.gameFrame % this.staggerFrames == 0) {
+        if (this.frameX < ((this.toExplode) ? 6 : 4)) this.frameX++
+        else {
+          (!this.toExplode) && (this.frameX = 0)
+        }
+      }
+      this.gameFrame++
+    }
+  }
+  
+
 const playerHeight = 100,
   playerWidth = 100;
 
@@ -151,12 +210,28 @@ const player = new Player(
 
 
 let asteroids = []
-
-
+let lobsterMorphs = []
+let rhinoMorphs = []
 
 
 let playerAmmo = 30;
 const maxAmmo = 30;
+
+
+// Push new LobsterMorph
+setInterval(() => {
+  const h = 100, w = 100
+  lobsterMorphs.push(new LobsterMorph(Math.floor(Math.random() * (gameWidth - w)), -50, w, h, 1120/14, 320/4,  'assets/lobstermorph.png'))
+}, 7000)
+
+
+setInterval(() => {
+  const h = 100, w = 100
+  rhinoMorphs.push(new RhinoMorph(Math.floor(Math.random() * (gameWidth - w)), -50, w, h, 480/6, 320/4,  'assets/rhinomorph.png'))
+}, 5000)
+
+
+
 
 function handlePlayerLives() {
   const livesArr = [];
@@ -202,7 +277,7 @@ setInterval(function () {
 setInterval(function () {
   const h = 60, w = 60
   asteroids.push(new Asteroid(Math.floor(Math.random() * (gameWidth - w)), -50, w, h))
-}, 2000)
+}, 7000)
 
 function isColliding(rect1, rect2) {
     return (
@@ -216,6 +291,46 @@ function isColliding(rect1, rect2) {
 
 
 function handleAsteroid() {
+  lobsterMorphs.forEach(lobs => {
+    lobs.draw()
+    lobs.update()
+    if(isColliding(player, lobs) && !lobs.toExplode) {
+      lobs.life = 0
+      if(PLAYERLIVES > 0) {
+        PLAYERLIVES--
+      }
+    }
+    if(lobs.life <= 0 && !lobs.toExplode) {
+      lobs.toExplode = true
+      lobs.explodeAudio.play()
+      setTimeout(()=> {
+        lobs.readyToPop = true
+      }, 600)
+    }
+  });
+  
+  
+  
+  rhinoMorphs.forEach(rhinos => {
+  rhinos.draw();
+  rhinos.update();
+  if (isColliding(player, rhinos) && !rhinos.toExplode) {
+    rhinos.life = 0;
+    if (PLAYERLIVES > 0) {
+      PLAYERLIVES--;
+    }
+  }
+  if (rhinos.life <= 0 && !rhinos.toExplode) {
+    rhinos.toExplode = true;
+    rhinos.explodeAudio.play();
+    setTimeout(() => {
+      rhinos.readyToPop = true;
+    }, 600);
+  }
+});
+
+  
+  
   asteroids.forEach(asteroid => {
     asteroid.draw()
     asteroid.update()
@@ -244,16 +359,36 @@ function handleAsteroid() {
         asteroid.life--;
       }
       
+      
+      lobsterMorphs.forEach(lobs => {
+        if(isColliding(obs, lobs) && !obs.readyToPop) {
+          obs.readyToPop = true
+          lobs.life > 0 && lobs.life--;
+        }
+        
+        lobsterMorphs = lobsterMorphs.filter(v => !v.readyToPop)
+       
+      });
+      
+      
+      rhinoMorphs.forEach(rhinos => {
+        if (isColliding(obs, rhinos) && !obs.readyToPop) {
+          obs.readyToPop = true;
+          if (rhinos.life > 0) {
+            rhinos.life--;
+          }
+        }
+      });
+      
+      rhinoMorphs = rhinoMorphs.filter(rhinos => !rhinos.readyToPop);
+
       if(obs.y <= 0) obs.readyToPop = true
     })
-    
-    
-    
     obstacles = obstacles.filter(obs => !obs.readyToPop)
-    
-    
-    
   });
+  
+  
+  
   
   asteroids = asteroids.filter(v => !v.readyToPop);
   
@@ -374,9 +509,9 @@ function renderBg() {
 
 // small devices (cp)
 if (gameWidth < gameHeight) {
-  alert(
+  /*alert(
     "Use swipe left to move the player to the left ⬅️ and swipe right to move the player to right ➡️"
-  );
+  ); */
   cvs.addEventListener("touchend", function (ev) {
     player.angle = 0;
   });
@@ -411,7 +546,12 @@ function animate() {
   renderBg();
   createFlame();
   player.draw();
-  obstacles.forEach(obs => {obs.draw();obs.update();})
+  
+  obstacles.forEach(obs => {
+    obs.draw();
+    obs.update();
+  })
+  
   handleAsteroid();
   drawAmmoBar();
   handlePlayerLives();
@@ -419,4 +559,4 @@ function animate() {
 }
 
 animate();
-      }
+              }
